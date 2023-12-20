@@ -3,6 +3,7 @@
 // std
 #include <iostream>
 #include <stdexcept>
+#include <cassert>
 
 namespace ogl {
 
@@ -36,16 +37,17 @@ namespace ogl {
         glfwMakeContextCurrent(window);
         
         if (!glfwGetCurrentContext()) {
-            std::cout << "Failed to make context current!" << std::endl;
+            assert(!glfwGetCurrentContext() && "Failed to make context current!");
             glfwTerminate();
             glfwDestroyWindow(window);
             return;
         }
 
         if (glewInit() != GLEW_OK) {
-            std::cout << "Failed to attain a GLFWwindow Context!" << std::endl;
+            assert(glewInit() != GLEW_OK && "Failed to attain a GLFWwindow Context!");
             glfwTerminate();
             glfwDestroyWindow(window);
+            return;
         }
 
         std::cout << glGetString(GL_VERSION) << std::endl;
