@@ -7,6 +7,7 @@
 
 namespace ogl {
 
+	// Shader Parser and loader.
 	struct ShaderProgramSource {
 		std::string VertexSource;
 		std::string FragmentSource;
@@ -86,24 +87,37 @@ namespace ogl {
 
 	void FirstApp::run() {
 		// Vertex Buffer | Move this to something like ogl_pipeline.cpp & .hpp.
-		float positions[6] = { // This is the data we pass through glBufferData.
-			0.0f,  0.5f,
-		   -0.5f, -0.5f,
-			0.5f, -0.5f
+		float positions[] = { // This is the data we pass through glBufferData.
+			0.5f, -0.5f, // 0
+		   -0.5f, -0.5f, // 1
+			0.5f,  0.5f, // 2
+		   -0.5f,  0.5f, // 3
 		};
 
-		unsigned int buffer; // GL Unsigned int, special to GLFW. | Defined the size indepently of the platform it is running on.
+		// Index buffer | Did this in my Godot test
+		unsigned int indicies[] = {
+			1, 0, 2, // The order here matters, depending on the order of your vertex positions! DON'T FORGET!
+			2, 3, 1,
+		};
+
+		// Vertex Buffer
+		unsigned int buffer; // GLuint - GL Unsigned int, special to GLFW. | Defined the size indepently of the platform it is running on.
 		glGenBuffers(1, &buffer); // Has the reference of the pointer because OpenGL works as a state machine?
 		glBindBuffer(GL_ARRAY_BUFFER, buffer);
 		// 6 * sizeof(float) is defining the size of the data {positions} in bytes.
-		glBufferData(GL_ARRAY_BUFFER, 6 * sizeof(float), positions, GL_STATIC_DRAW); // Static vs Dynamic | Static draw once, Dynamic draw many types.
+		glBufferData(GL_ARRAY_BUFFER, 6*2 * sizeof(float), positions, GL_STATIC_DRAW); // Static vs Dynamic | Static draw once, Dynamic draw many types.
 
 		glEnableVertexAttribArray(0);
 		// Type is what type is the information, here we have float.
 		glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0);
 
-		ShaderProgramSource source = ParseShader("D:/C++ Projects/OpenGL Learning/res/shaders/simple_shader.shader");
+		// Index Buffer | Very Similar to the Vertex Buffer.
+		unsigned int ibo; // GL Unsigned int, special to GLFW. | Defined the size indepently of the platform it is running on.
+		glGenBuffers(1, &ibo);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 * sizeof(unsigned int), indicies, GL_STATIC_DRAW); // MUST BE AN UNSIGNED INT FOR INDEX BUFFER!
 
+		ShaderProgramSource source = ParseShader("D:/C++ Projects/OpenGL Learning/res/shaders/simple_shader.shader");
 		unsigned int shader = CreateShader(source.VertexSource, source.FragmentSource);
 		glUseProgram(shader);
 
@@ -112,14 +126,7 @@ namespace ogl {
 			/* Render here */
 			glClear(GL_COLOR_BUFFER_BIT);
 
-			glDrawArrays(GL_TRIANGLES, 0, 3); // 0 = where we start, 3 = vertecies. | The current bound buffer is going to be used here, the one we defined above.
-
-			// LEGACY
-			//glBegin(GL_TRIANGLES);
-			//glVertex2f(0.0f, 0.5f);
-			//glVertex2f(-0.5f, -0.5f);
-			//glVertex2f(0.5f, -0.5f);
-			//glEnd();
+			glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
 
 			/* Swap front and back buffers */
 			glfwSwapBuffers(oglWindow.window);
