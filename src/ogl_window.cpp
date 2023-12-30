@@ -35,6 +35,8 @@ namespace ogl {
 
         /* Make the window's context current */
         glfwMakeContextCurrent(window);
+
+        glfwSwapInterval(1);
         
         if (!glfwGetCurrentContext()) {
             assert(!glfwGetCurrentContext() && "Failed to make context current!");

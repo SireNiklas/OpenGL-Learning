@@ -141,12 +141,27 @@ namespace ogl {
 		unsigned int shader = CreateShader(source.VertexSource, source.FragmentSource);
 		GLCall(glUseProgram(shader));
 
+		GLCall(int location = glGetUniformLocation(shader, "u_Color"));
+		ASSERT(location != -1);
+		GLCall(glUniform4f(location, 0.0f, 1.0f, 0.0f, 1.0f));
+
+		float b = 0.0f;
+		float increment = 0.05f;
+
 		// Game Loop
 		while (!oglWindow.shouldClose()) {
 			/* Render here */
 			GLCall(glClear(GL_COLOR_BUFFER_BIT));
 
+			GLCall(glUniform4f(location, 0.0f, 1.0f, b, 1.0f));
 			GLCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr));
+
+			if (b > 1.0f)
+				increment = -0.05f;
+			else if (b < 0.0f)
+				increment = 0.05f;
+
+			b += increment;
 
 			/* Swap front and back buffers */
 			glfwSwapBuffers(oglWindow.window);
