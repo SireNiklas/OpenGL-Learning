@@ -120,12 +120,16 @@ namespace ogl {
 			2, 3, 1,
 		};
 
+		unsigned int vao; // Double check the end of this video https://www.youtube.com/watch?v=Bcs56Mm-FJY&list=PLlrATfBNZ98foTJPJ_Ev03o2oq3-GGOS2&index=13 | Around 15:00 or later. Talks about the usage of VAOs.
+		GLCall(glGenVertexArrays(1, &vao));
+		GLCall(glBindVertexArray(vao)); // This is creating a Vertex Array Object.
+
 		// Vertex Buffer
 		unsigned int buffer; // GLuint - GL Unsigned int, special to GLFW. | Defined the size indepently of the platform it is running on.
 		GLCall(glGenBuffers(1, &buffer)); // Has the reference of the pointer because OpenGL works as a state machine?
 		GLCall(glBindBuffer(GL_ARRAY_BUFFER, buffer));
 		// 6 * sizeof(float) is defining the size of the data {positions} in bytes.
-		GLCall(glBufferData(GL_ARRAY_BUFFER, 6*2 * sizeof(float), positions, GL_STATIC_DRAW)); // Static vs Dynamic | Static draw once, Dynamic draw many types.
+		GLCall(glBufferData(GL_ARRAY_BUFFER, 4*2 * sizeof(float), positions, GL_STATIC_DRAW)); // Static vs Dynamic | Static draw once, Dynamic draw many types.
 
 		GLCall(glEnableVertexAttribArray(0));
 		// Type is what type is the information, here we have float.
@@ -144,6 +148,13 @@ namespace ogl {
 		GLCall(int location = glGetUniformLocation(shader, "u_Color"));
 		ASSERT(location != -1);
 		GLCall(glUniform4f(location, 0.0f, 1.0f, 0.0f, 1.0f));
+		
+
+		// Unbound
+		GLCall(glBindVertexArray(0));
+		GLCall(glUseProgram(0));
+		GLCall(glBindBuffer(GL_ARRAY_BUFFER, 0));
+		GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
 
 		float b = 0.0f;
 		float increment = 0.05f;
@@ -153,7 +164,12 @@ namespace ogl {
 			/* Render here */
 			GLCall(glClear(GL_COLOR_BUFFER_BIT));
 
+			GLCall(glUseProgram(shader));
 			GLCall(glUniform4f(location, 0.0f, 1.0f, b, 1.0f));
+
+			GLCall(glBindVertexArray(vao));
+			GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo));
+
 			GLCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr));
 
 			if (b > 1.0f)

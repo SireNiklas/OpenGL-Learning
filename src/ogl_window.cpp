@@ -24,6 +24,11 @@ namespace ogl {
 
         glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
+        // Setting the OpenGL context version is 4.6 hence Major and Minor versions, and setting the profile to Core. | GLFW_OPENGL_COMPAT_PROFILE can be set, but is also set inplace of core.
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4); // Required for the Profile.
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
+        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
         // Create Window
         window = glfwCreateWindow(width, height, windowName.c_str(), nullptr, nullptr);
 
