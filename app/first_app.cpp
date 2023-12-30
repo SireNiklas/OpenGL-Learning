@@ -5,7 +5,27 @@
 #include <fstream>
 #include <sstream>
 
+#define ASSERT(x) if (!(x)) __debugbreak(); // Macro, also uses MSVS internal break. | NOTENOTENOTE: GLMessageCallback is slightly more usefull, but not to big of an issue.
+
+#ifdef _DEBUG
+#define GLCall(x) GLClearError(); x; ASSERT(GLLogCall(#x, __FILE__, __LINE__))	
+#else
+#define GLCall(x) x
+#endif
+
 namespace ogl {
+
+	static void GLClearError() { 
+		while (glGetError()); // While GL_Get_Error is not equal to GL_NO_ERROR otherwise known as 0.
+	}
+
+	static bool GLLogCall(const char* function, const char* file, int line) { // Go about this in a smart way such as looking at the actual vlaue such as 0x0500 or 0x0501 and go down the number line sequentially or just what is important.
+		while (GLenum error = glGetError()) {
+			std::cout << "[OpenGL ERROR: INVALID ENUM (" << error << "): " << function << " " << file << ":" << line << std::endl;
+			return false;
+		}
+		return true;
+	}
 
 	// Shader Parser and loader.
 	struct ShaderProgramSource {
@@ -47,22 +67,22 @@ namespace ogl {
 	}
 
 	static unsigned int CompileShader(unsigned int type, const std::string& source) {
-		unsigned int id = glCreateShader(type);
+		GLCall(unsigned int id = glCreateShader(type));
 		const char* src = source.c_str();
-		glShaderSource(id, 1, &src, nullptr);
-		glCompileShader(id);
+		GLCall(glShaderSource(id, 1, &src, nullptr));
+		GLCall(glCompileShader(id));
 
 		// Error Handling
 		int result;
-		glGetShaderiv(id, GL_COMPILE_STATUS, &result);
+		GLCall(glGetShaderiv(id, GL_COMPILE_STATUS, &result));
 		if (result == GL_FALSE) {
 			int length;
-			glGetShaderiv(id, GL_INFO_LOG_LENGTH, &length);
+			GLCall(glGetShaderiv(id, GL_INFO_LOG_LENGTH, &length));
 			char* message = (char*)_malloca(length * sizeof(char)); // alloca allocates on the stack not the heap.
-			glGetShaderInfoLog(id, length, &length, message);
+			GLCall(glGetShaderInfoLog(id, length, &length, message));
 			throw std::runtime_error("Failed to compile " + std::string((type == GL_VERTEX_SHADER ? "vertex" : "fragment")) + " shader!");
 			std::cout << message << std::endl;
-			glDeleteShader(id);
+			GLCall(glDeleteShader(id));
 			return EXIT_FAILURE;
 		}
 
@@ -70,17 +90,17 @@ namespace ogl {
 	}
 
 	static unsigned int CreateShader(const std::string& vertexShader, const std::string& fragmentShader) {
-		unsigned int program = glCreateProgram();
+		GLCall(unsigned int program = glCreateProgram());
 		unsigned int vs = CompileShader(GL_VERTEX_SHADER, vertexShader);
 		unsigned int fs = CompileShader(GL_FRAGMENT_SHADER, fragmentShader);
 
-		glAttachShader(program, vs);
-		glAttachShader(program, fs);
-		glLinkProgram(program);
-		glValidateProgram(program);
+		GLCall(glAttachShader(program, vs));
+		GLCall(glAttachShader(program, fs));
+		GLCall(glLinkProgram(program));
+		GLCall(glValidateProgram(program));
 
-		glDeleteShader(vs);
-		glDeleteShader(fs);
+		GLCall(glDeleteShader(vs));
+		GLCall(glDeleteShader(fs));
 
 		return program;
 	}
@@ -102,31 +122,31 @@ namespace ogl {
 
 		// Vertex Buffer
 		unsigned int buffer; // GLuint - GL Unsigned int, special to GLFW. | Defined the size indepently of the platform it is running on.
-		glGenBuffers(1, &buffer); // Has the reference of the pointer because OpenGL works as a state machine?
-		glBindBuffer(GL_ARRAY_BUFFER, buffer);
+		GLCall(glGenBuffers(1, &buffer)); // Has the reference of the pointer because OpenGL works as a state machine?
+		GLCall(glBindBuffer(GL_ARRAY_BUFFER, buffer));
 		// 6 * sizeof(float) is defining the size of the data {positions} in bytes.
-		glBufferData(GL_ARRAY_BUFFER, 6*2 * sizeof(float), positions, GL_STATIC_DRAW); // Static vs Dynamic | Static draw once, Dynamic draw many types.
+		GLCall(glBufferData(GL_ARRAY_BUFFER, 6*2 * sizeof(float), positions, GL_STATIC_DRAW)); // Static vs Dynamic | Static draw once, Dynamic draw many types.
 
-		glEnableVertexAttribArray(0);
+		GLCall(glEnableVertexAttribArray(0));
 		// Type is what type is the information, here we have float.
-		glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0);
+		GLCall(glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0));
 
 		// Index Buffer | Very Similar to the Vertex Buffer.
 		unsigned int ibo; // GL Unsigned int, special to GLFW. | Defined the size indepently of the platform it is running on.
-		glGenBuffers(1, &ibo);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 * sizeof(unsigned int), indicies, GL_STATIC_DRAW); // MUST BE AN UNSIGNED INT FOR INDEX BUFFER!
+		GLCall(glGenBuffers(1, &ibo));
+		GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo));
+		GLCall(glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 * sizeof(unsigned int), indicies, GL_STATIC_DRAW)); // MUST BE AN UNSIGNED INT FOR INDEX BUFFER!
 
 		ShaderProgramSource source = ParseShader("D:/C++ Projects/OpenGL Learning/res/shaders/simple_shader.shader");
 		unsigned int shader = CreateShader(source.VertexSource, source.FragmentSource);
-		glUseProgram(shader);
+		GLCall(glUseProgram(shader));
 
 		// Game Loop
 		while (!oglWindow.shouldClose()) {
 			/* Render here */
-			glClear(GL_COLOR_BUFFER_BIT);
+			GLCall(glClear(GL_COLOR_BUFFER_BIT));
 
-			glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
+			GLCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr));
 
 			/* Swap front and back buffers */
 			glfwSwapBuffers(oglWindow.window);
@@ -135,6 +155,6 @@ namespace ogl {
 			glfwPollEvents();
 		}
 
-		glDeleteProgram(shader);
+		GLCall(glDeleteProgram(shader));
 	}
 }
