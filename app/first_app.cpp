@@ -1,90 +1,7 @@
 #include "first_app.hpp"
 #include "../src/ogl_pipeline.hpp"
 
-// std
-#include <iostream>
-#include <fstream>
-#include <sstream>
-
 namespace ogl {
-	// Shader Parser and loader Start
-	struct ShaderProgramSource {
-		std::string VertexSource;
-		std::string FragmentSource;
-	};
-
-	static ShaderProgramSource ParseShader(const std::string& filepath) {
-		std::ifstream stream(filepath);
-		if (!stream)
-			throw std::runtime_error("Failed to open file: " + filepath);
-
-		std::cout << filepath << std::endl;
-
-		enum class ShaderType {
-			NONE = -1,
-			VERTEX = 0,
-			FRAGMENT = 1
-		};
-
-		std::string line;
-		std::stringstream ss[2];
-		ShaderType type = ShaderType::NONE;
-		while (getline(stream, line))
-		{
-			if (line.find("#shader") != std::string::npos) {
-				if (line.find("vertex") != std::string::npos)
-					type = ShaderType::VERTEX;
-
-				else if (line.find("fragment") != std::string::npos)
-					type = ShaderType::FRAGMENT;
-			}
-			else {
-				ss[(int)type] << line << "\n";
-			}
-		}
-
-		return { ss[0].str(), ss[1].str()};
-	}
-
-	static unsigned int CompileShader(unsigned int type, const std::string& source) {
-		GLCall(unsigned int id = glCreateShader(type));
-		const char* src = source.c_str();
-		GLCall(glShaderSource(id, 1, &src, nullptr));
-		GLCall(glCompileShader(id));
-
-		// Error Handling
-		int result;
-		GLCall(glGetShaderiv(id, GL_COMPILE_STATUS, &result));
-		if (result == GL_FALSE) {
-			int length;
-			GLCall(glGetShaderiv(id, GL_INFO_LOG_LENGTH, &length));
-			char* message = (char*)_malloca(length * sizeof(char)); // alloca allocates on the stack not the heap.
-			GLCall(glGetShaderInfoLog(id, length, &length, message));
-			throw std::runtime_error("Failed to compile " + std::string((type == GL_VERTEX_SHADER ? "vertex" : "fragment")) + " shader!");
-			std::cout << message << std::endl;
-			GLCall(glDeleteShader(id));
-			return EXIT_FAILURE;
-		}
-
-		return id;
-	}
-
-	static unsigned int CreateShader(const std::string& vertexShader, const std::string& fragmentShader) {
-		GLCall(unsigned int program = glCreateProgram());
-		unsigned int vs = CompileShader(GL_VERTEX_SHADER, vertexShader);
-		unsigned int fs = CompileShader(GL_FRAGMENT_SHADER, fragmentShader);
-
-		GLCall(glAttachShader(program, vs));
-		GLCall(glAttachShader(program, fs));
-		GLCall(glLinkProgram(program));
-		GLCall(glValidateProgram(program));
-
-		GLCall(glDeleteShader(vs));
-		GLCall(glDeleteShader(fs));
-
-		return program;
-	}
-
 	// Shader Parser and loader End
 	// Application Start
 	void FirstApp::run() {
@@ -110,20 +27,17 @@ namespace ogl {
 		layout.Push<float>(2);
 		va.AddBuffer(vb, layout);
 
-		ShaderProgramSource source = ParseShader("D:/C++ Projects/OpenGL Learning/res/shaders/simple_shader.shader");
-		unsigned int shader = CreateShader(source.VertexSource, source.FragmentSource);
-		GLCall(glUseProgram(shader));
+		OglShader shader("D:/C++ Projects/OpenGL Learning/res/shaders/simple_shader.shader");
+		shader.Bind();
 
-		GLCall(int location = glGetUniformLocation(shader, "u_Color"));
-		ASSERT(location != -1);
-		GLCall(glUniform4f(location, 0.0f, 1.0f, 0.0f, 1.0f));
+		shader.SetUniform4f("u_Color", 0.0f, 1.0f, 0.0f, 1.0f);
 		
 
 		// Unbound
 		va.Unbind();
-		GLCall(glUseProgram(0));
-		GLCall(glBindBuffer(GL_ARRAY_BUFFER, 0));
-		GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
+		vb.Unbind();
+		ib.Unbind();
+		shader.Unbind();
 
 		float b = 0.0f;
 		float increment = 0.05f;
@@ -134,8 +48,8 @@ namespace ogl {
 			GLCall(glClear(GL_COLOR_BUFFER_BIT));
 
 			// Draw Req
-			GLCall(glUseProgram(shader));
-			GLCall(glUniform4f(location, 0.0f, 1.0f, b, 1.0f));
+			shader.Bind();
+			shader.SetUniform4f("u_Color", 0.0f, 1.0f, b, 1.0f);
 
 			va.Bind();
 			ib.Bind();
@@ -155,7 +69,5 @@ namespace ogl {
 			/* Poll for and process events */
 			glfwPollEvents();
 		}
-
-		GLCall(glDeleteProgram(shader));
 	}
 }
