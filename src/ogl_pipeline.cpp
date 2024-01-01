@@ -1,6 +1,4 @@
 #include "ogl_pipeline.hpp"
-#include "ogl_renderer.hpp"
-
 
 namespace ogl {
 #pragma region Vertex Buffer
@@ -55,6 +53,41 @@ namespace ogl {
 	{
 		GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
 
+	}
+#pragma endregion
+
+#pragma region Vertext Array Object
+	OglVertexArray::OglVertexArray()
+	{
+		GLCall(glGenVertexArrays(1, &m_RendererID));
+	}
+
+	OglVertexArray::~OglVertexArray()
+	{
+		GLCall(glDeleteVertexArrays(1, &m_RendererID));
+	}
+
+	void OglVertexArray::AddBuffer(const OglVertexBuffer& vb, const OglVertexBufferLayout& layout)
+	{
+		Bind();
+		vb.Bind();
+		const auto& elements = layout.GetElements();
+		unsigned int offset = 0;
+		for (unsigned int i = 0; i < elements.size(); i++) {
+			const auto& element = elements[i];
+			GLCall(glEnableVertexAttribArray(i));
+			GLCall(glVertexAttribPointer(i, element.count, element.type, element.normalized, layout.GetStride(), (const void*)offset));
+			offset += element.count * OglVertexBufferElement::GetSizeOfType(element.type);
+		}
+	}
+	void OglVertexArray::Bind() const
+	{
+		GLCall(glBindVertexArray(m_RendererID));
+	}
+
+	void OglVertexArray::Unbind() const
+	{
+		GLCall(glBindVertexArray(0));
 	}
 #pragma endregion
 }

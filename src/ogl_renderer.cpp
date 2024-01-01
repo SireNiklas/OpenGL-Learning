@@ -1,4 +1,3 @@
-
 #include "ogl_renderer.hpp"
 #include <iostream>
 

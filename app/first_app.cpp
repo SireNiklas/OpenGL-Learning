@@ -1,5 +1,4 @@
 #include "first_app.hpp"
-#include "../src/ogl_renderer.hpp"
 #include "../src/ogl_pipeline.hpp"
 
 // std
@@ -103,16 +102,13 @@ namespace ogl {
 			2, 3, 1,
 		};
 
-		unsigned int vao; // Double check the end of this video https://www.youtube.com/watch?v=Bcs56Mm-FJY&list=PLlrATfBNZ98foTJPJ_Ev03o2oq3-GGOS2&index=13 | Around 15:00 or later. Talks about the usage of VAOs.
-		GLCall(glGenVertexArrays(1, &vao));
-		GLCall(glBindVertexArray(vao)); // This is creating a Vertex Array Object.
-
+		OglVertexArray va;
 		OglVertexBuffer vb(positions, 4 * 2 * sizeof(float));
-
-		GLCall(glEnableVertexAttribArray(0));
-		GLCall(glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0));
-
 		OglIndexBuffer ib(indicies, 6);
+
+		OglVertexBufferLayout layout;
+		layout.Push<float>(2);
+		va.AddBuffer(vb, layout);
 
 		ShaderProgramSource source = ParseShader("D:/C++ Projects/OpenGL Learning/res/shaders/simple_shader.shader");
 		unsigned int shader = CreateShader(source.VertexSource, source.FragmentSource);
@@ -124,7 +120,7 @@ namespace ogl {
 		
 
 		// Unbound
-		GLCall(glBindVertexArray(0));
+		va.Unbind();
 		GLCall(glUseProgram(0));
 		GLCall(glBindBuffer(GL_ARRAY_BUFFER, 0));
 		GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
@@ -141,7 +137,7 @@ namespace ogl {
 			GLCall(glUseProgram(shader));
 			GLCall(glUniform4f(location, 0.0f, 1.0f, b, 1.0f));
 
-			GLCall(glBindVertexArray(vao));
+			va.Bind();
 			ib.Bind();
 
 			GLCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr));
