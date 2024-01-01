@@ -1,33 +1,14 @@
 #include "first_app.hpp"
+#include "../src/ogl_renderer.hpp"
+#include "../src/ogl_pipeline.hpp"
 
 // std
 #include <iostream>
 #include <fstream>
 #include <sstream>
 
-#define ASSERT(x) if (!(x)) __debugbreak(); // Macro, also uses MSVS internal break. | NOTENOTENOTE: GLMessageCallback is slightly more usefull, but not to big of an issue.
-
-#ifdef _DEBUG
-#define GLCall(x) GLClearError(); x; ASSERT(GLLogCall(#x, __FILE__, __LINE__))	
-#else
-#define GLCall(x) x
-#endif
-
 namespace ogl {
-
-	static void GLClearError() { 
-		while (glGetError()); // While GL_Get_Error is not equal to GL_NO_ERROR otherwise known as 0.
-	}
-
-	static bool GLLogCall(const char* function, const char* file, int line) { // Go about this in a smart way such as looking at the actual vlaue such as 0x0500 or 0x0501 and go down the number line sequentially or just what is important.
-		while (GLenum error = glGetError()) {
-			std::cout << "[OpenGL ERROR: INVALID ENUM (" << error << "): " << function << " " << file << ":" << line << std::endl;
-			return false;
-		}
-		return true;
-	}
-
-	// Shader Parser and loader.
+	// Shader Parser and loader Start
 	struct ShaderProgramSource {
 		std::string VertexSource;
 		std::string FragmentSource;
@@ -105,6 +86,8 @@ namespace ogl {
 		return program;
 	}
 
+	// Shader Parser and loader End
+	// Application Start
 	void FirstApp::run() {
 		// Vertex Buffer | Move this to something like ogl_pipeline.cpp & .hpp.
 		float positions[] = { // This is the data we pass through glBufferData.
@@ -124,22 +107,12 @@ namespace ogl {
 		GLCall(glGenVertexArrays(1, &vao));
 		GLCall(glBindVertexArray(vao)); // This is creating a Vertex Array Object.
 
-		// Vertex Buffer
-		unsigned int buffer; // GLuint - GL Unsigned int, special to GLFW. | Defined the size indepently of the platform it is running on.
-		GLCall(glGenBuffers(1, &buffer)); // Has the reference of the pointer because OpenGL works as a state machine?
-		GLCall(glBindBuffer(GL_ARRAY_BUFFER, buffer));
-		// 6 * sizeof(float) is defining the size of the data {positions} in bytes.
-		GLCall(glBufferData(GL_ARRAY_BUFFER, 4*2 * sizeof(float), positions, GL_STATIC_DRAW)); // Static vs Dynamic | Static draw once, Dynamic draw many types.
+		OglVertexBuffer vb(positions, 4 * 2 * sizeof(float));
 
 		GLCall(glEnableVertexAttribArray(0));
-		// Type is what type is the information, here we have float.
 		GLCall(glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0));
 
-		// Index Buffer | Very Similar to the Vertex Buffer.
-		unsigned int ibo; // GL Unsigned int, special to GLFW. | Defined the size indepently of the platform it is running on.
-		GLCall(glGenBuffers(1, &ibo));
-		GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo));
-		GLCall(glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 * sizeof(unsigned int), indicies, GL_STATIC_DRAW)); // MUST BE AN UNSIGNED INT FOR INDEX BUFFER!
+		OglIndexBuffer ib(indicies, 6);
 
 		ShaderProgramSource source = ParseShader("D:/C++ Projects/OpenGL Learning/res/shaders/simple_shader.shader");
 		unsigned int shader = CreateShader(source.VertexSource, source.FragmentSource);
@@ -164,11 +137,12 @@ namespace ogl {
 			/* Render here */
 			GLCall(glClear(GL_COLOR_BUFFER_BIT));
 
+			// Draw Req
 			GLCall(glUseProgram(shader));
 			GLCall(glUniform4f(location, 0.0f, 1.0f, b, 1.0f));
 
 			GLCall(glBindVertexArray(vao));
-			GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo));
+			ib.Bind();
 
 			GLCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr));
 
