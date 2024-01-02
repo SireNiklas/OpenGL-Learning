@@ -1,5 +1,5 @@
 #include "first_app.hpp"
-#include "../src/ogl_pipeline.hpp"
+#include "../src/ogl_renderer.hpp"
 
 namespace ogl {
 	// Shader Parser and loader End
@@ -39,22 +39,21 @@ namespace ogl {
 		ib.Unbind();
 		shader.Unbind();
 
+		OglRenderer renderer;
+
 		float b = 0.0f;
 		float increment = 0.05f;
 
-		// Game Loop
+#pragma region Game Loop
 		while (!oglWindow.shouldClose()) {
 			/* Render here */
-			GLCall(glClear(GL_COLOR_BUFFER_BIT));
+			renderer.Clear();
 
 			// Draw Req
 			shader.Bind();
-			shader.SetUniform4f("u_Color", 0.0f, 1.0f, b, 1.0f);
+			shader.SetUniform4f("u_Color", 0.0f, 1.0f, b, 1.0f); // This should tech
 
-			va.Bind();
-			ib.Bind();
-
-			GLCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr));
+			renderer.Draw(va, ib, shader);
 
 			if (b > 1.0f)
 				increment = -0.05f;
@@ -69,5 +68,7 @@ namespace ogl {
 			/* Poll for and process events */
 			glfwPollEvents();
 		}
+#pragma endregion
+
 	}
 }

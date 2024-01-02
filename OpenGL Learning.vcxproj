@@ -140,10 +140,14 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="app\first_app.cpp" />
+    <ClCompile Include="src\ogl_errorhandler.cpp" />
     <ClCompile Include="src\ogl_renderer.cpp" />
     <ClCompile Include="src\ogl_pipeline.cpp" />
     <ClCompile Include="src\ogl_window.cpp" />
     <ClCompile Include="src\main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\ogl_errorhandler.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

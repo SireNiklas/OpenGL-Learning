@@ -3,16 +3,18 @@
 
 namespace ogl {
 
-	// Error Handling
-	void GLClearError() {
-		while (glGetError()); // While GL_Get_Error is not equal to GL_NO_ERROR otherwise known as 0.
+#pragma region Renderer
+	void OglRenderer::Draw(const OglVertexArray& va, const OglIndexBuffer& ib, const OglShader& shader) const {
+		shader.Bind();
+		va.Bind();
+		ib.Bind();
+		GLCall(glDrawElements(GL_TRIANGLES, ib.GetCount(), GL_UNSIGNED_INT, nullptr)); // GL_UNSIGNED_INT cause we aren't using any other, BUT I can change it or even grab it depending on what I choose to do.
 	}
+	void OglRenderer::Clear() const
+	{
+		GLCall(glClear(GL_COLOR_BUFFER_BIT));
+	}
+	#pragma endregion
 
-	bool GLLogCall(const char* function, const char* file, int line) { // Go about this in a smart way such as looking at the actual vlaue such as 0x0500 or 0x0501 and go down the number line sequentially or just what is important.
-		while (GLenum error = glGetError()) {
-			std::cout << "[OpenGL ERROR: INVALID ENUM (" << error << "): " << function << " " << file << ":" << line << std::endl;
-			return false;
-		}
-		return true;
-	}
+
 }

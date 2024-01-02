@@ -1,5 +1,5 @@
 #pragma once
-#include "ogl_renderer.hpp"
+#include "ogl_errorhandler.hpp"
 
 // std
 #include <vector>
@@ -39,6 +39,7 @@ namespace ogl {
 
 		inline unsigned int GetCount() const { return m_Count; }
 	};
+#pragma endregion
 
 #pragma region VertexBufferLayout & Element
 	struct OglVertexBufferElement {
@@ -93,8 +94,7 @@ namespace ogl {
 	};
 #pragma endregion
 
-
-#pragma region Vertex Buffer Array
+#pragma region Vertex Array Object
 	class OglVertexArray {
 	private:
 		unsigned int m_RendererID;

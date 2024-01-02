@@ -1,19 +1,12 @@
 #pragma once
 
-#include "../src/ogl_window.hpp"
-
-// Error Handling Start
-#define ASSERT(x) if (!(x)) __debugbreak(); // Macro, also uses MSVS internal break. | NOTENOTENOTE: GLMessageCallback is slightly more usefull, but not to big of an issue.
-
-#ifdef _DEBUG
-#define GLCall(x) GLClearError(); x; ASSERT(GLLogCall(#x, __FILE__, __LINE__))	
-#else
-#define GLCall(x) x
-#endif
+#include "ogl_pipeline.hpp"
 
 namespace ogl {
 
-	// Error Handling
-	void GLClearError();
-	bool GLLogCall(const char* function, const char* file, int line);
+	class OglRenderer {
+	public:
+		void Draw(const OglVertexArray& va, const OglIndexBuffer& ib, const OglShader& shader) const;
+		void Clear() const;
+	};
 } // namespace ogl
