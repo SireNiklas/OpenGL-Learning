@@ -1,6 +1,6 @@
 #include "ogl_texture.hpp"
 
-#include "vendor/stb_image/stb_image.h"
+#include "stb_image/stb_image.h"
 
 namespace ogl {
 	OglTexture::OglTexture(const std::string& path) : m_RendererID(0), m_FilePath(path), m_LocalBuffer(nullptr), m_Height(0), m_BPP(0)
@@ -12,7 +12,7 @@ namespace ogl {
 		GLCall(glGenTextures(1, &m_RendererID));
 		GLCall(glBindTexture(GL_TEXTURE_2D, m_RendererID));
 
-		// Display SETTINGS: These four must be specified, the are the defualts. | glTextureParameteri and glTexParameteri ARE VERY DIFFERENT!!!
+		// Display SETTINGS: These four must be specified, the are the defaults. | glTextureParameteri and glTexParameteri ARE VERY DIFFERENT!!!
 		GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
 		GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
 		GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));

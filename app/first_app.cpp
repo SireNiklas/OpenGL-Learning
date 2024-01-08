@@ -1,6 +1,12 @@
 #include "first_app.hpp"
+
+// Engine
 #include "../src/ogl_renderer.hpp"
 #include "../src/ogl_texture.hpp"
+
+// GLM
+#include "glm/glm.hpp"
+#include "glm/gtc/matrix_transform.hpp"
 
 namespace ogl {
 	// Shader Parser and loader End
@@ -11,7 +17,7 @@ namespace ogl {
 			0.5f, -0.5f, 1.0f, 0.0f, // 0
 		   -0.5f, -0.5f, 0.0f, 0.0f, // 1
 			0.5f,  0.5f, 1.0f, 1.0f, // 2
-		   -0.5f,  0.5f, 0.0f, 1.0f // 3
+		   -0.5f,  0.5f, 0.0f, 1.0f  // 3
 		};
 
 		// Index buffer | Did this in my Godot test
@@ -26,19 +32,24 @@ namespace ogl {
 
 		OglVertexArray va;
 		OglVertexBuffer vb(positions, 4 * 4 * sizeof(float));
-		OglIndexBuffer ib(indicies, 6);
 
 		OglVertexBufferLayout layout;
 		layout.Push<float>(2);
 		layout.Push<float>(2);
 		va.AddBuffer(vb, layout);
 
+		OglIndexBuffer ib(indicies, 6);
+
+		// Creating a "view".
+		glm::mat4 proj = glm::ortho(-2.0f, 2.0f, -1.5f, 1.5f, -1.0f, 1.0f); // This has a 4x3. (Fits our current window) || Math is cool?
+
 		OglShader shader("D:/C++ Projects/OpenGL Learning/res/shaders/simple_shader.shader");
 		shader.Bind();
 
 		shader.SetUniform4f("u_Color", 0.0f, 1.0f, 0.0f, 1.0f);
+		shader.SetUniformMat4f("u_MVP", proj);
 
-		OglTexture texture("D:/C++ Projects/OpenGL Learning/res/texture/thecherno.png");
+		OglTexture texture("D:/C++ Projects/OpenGL Learning/res/texture/wall.jpg");
 		texture.Bind();
 		shader.SetUniform1i("u_Texture", 0);
 
