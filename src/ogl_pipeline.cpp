@@ -196,7 +196,17 @@ namespace ogl {
 		GLCall(glUniform4f(GetUniformLocation(name), v0, v1, v2, v3));
 	}
 
-	unsigned int OglShader::GetUniformLocation(const std::string& name)
+	void OglShader::SetUniform1f(const std::string& name, float value)
+	{
+		GLCall(glUniform1f(GetUniformLocation(name), value));
+	}
+
+	void OglShader::SetUniform1i(const std::string& name, int value)
+	{
+		GLCall(glUniform1i(GetUniformLocation(name), value));
+	}
+
+	int OglShader::GetUniformLocation(const std::string& name)
 	{
 		if (m_UniformLocationCache.find(name) != m_UniformLocationCache.end())
 			return m_UniformLocationCache[name];
