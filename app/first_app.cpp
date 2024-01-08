@@ -20,8 +20,9 @@ namespace ogl {
 			2, 3, 1,
 		};
 
-		GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
-		GLCall(glEnable(GL_BLEND));
+		// By default GL uses GLBlendEquation: GL_FUNC_ADD if no blend function is set.
+		GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)); // src = GL_SRC_ALPHA, dest = GL_ONE_MINUS_SRC_ALPHA | src alpha = 0 | dest = 1 - src(0) = 1 | Blending is IMPORTANT to more research into it!
+		GLCall(glEnable(GL_BLEND)); // Disabled by default in OpenGL
 
 		OglVertexArray va;
 		OglVertexBuffer vb(positions, 4 * 4 * sizeof(float));
@@ -37,7 +38,7 @@ namespace ogl {
 
 		shader.SetUniform4f("u_Color", 0.0f, 1.0f, 0.0f, 1.0f);
 
-		OglTexture texture("D:/C++ Projects/OpenGL Learning/res/texture/wall.jpg");
+		OglTexture texture("D:/C++ Projects/OpenGL Learning/res/texture/thecherno.png");
 		texture.Bind();
 		shader.SetUniform1i("u_Texture", 0);
 
